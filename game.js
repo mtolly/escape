@@ -197,19 +197,19 @@
 
   Wall = (function() {
 
-    function Wall(rect) {
-      this.rect = rect;
+    function Wall(shape) {
+      this.shape = shape;
     }
 
     Wall.prototype.push = function(shape, push_x, push_y) {
-      while (collides(this.rect, shape)) {
+      while (collides(this.shape, shape)) {
         shape = shape.change_x(push_x).change_y(push_y);
       }
       return shape;
     };
 
     Wall.prototype.draw = function() {
-      return this.rect.draw('black');
+      return this.shape.draw('black');
     };
 
     return Wall;
@@ -220,8 +220,8 @@
 
     __extends(SwitchWall, _super);
 
-    function SwitchWall(rect, color) {
-      this.rect = rect;
+    function SwitchWall(shape, color) {
+      this.shape = shape;
       this.color = color;
     }
 
@@ -250,7 +250,7 @@
       if (this.open()) {
         return;
       }
-      return this.rect.draw(this.color);
+      return this.shape.draw(this.color);
     };
 
     return SwitchWall;
@@ -289,7 +289,7 @@
       if (moving) {
         dx = this.speed * Math.cos(this.angle);
         dy = this.speed * Math.sin(this.angle);
-        this.circle = new Circle(new Point(this.circle.center.x + dx, this.circle.center.y + dy), this.circle.radius);
+        this.circle = this.circle.change_x(dx).change_y(dy);
         push_x = move_left ? 1 : move_right ? -1 : 0;
         push_y = move_up ? 1 : move_down ? -1 : 0;
         for (_i = 0, _len = walls.length; _i < _len; _i++) {
@@ -386,31 +386,31 @@
 
   Bullet = (function() {
 
-    function Bullet(circle, angle) {
-      this.circle = circle;
+    function Bullet(shape, angle) {
+      this.shape = shape;
       this.angle = angle;
       this.speed = 8;
     }
 
     Bullet.prototype.draw = function() {
-      return this.circle.draw('magenta');
+      return this.shape.draw('magenta');
     };
 
     Bullet.prototype.update = function() {
       var body, dx, dy, wall, _i, _j, _len, _len1;
       dx = this.speed * Math.cos(this.angle);
       dy = this.speed * Math.sin(this.angle);
-      this.circle.center = this.circle.center.change_x(dx).change_y(dy);
+      this.shape = this.shape.change_x(dx).change_y(dy);
       for (_i = 0, _len = walls.length; _i < _len; _i++) {
         wall = walls[_i];
-        if (wall.rect.includes_point(this.circle.center)) {
+        if (collides(this.shape, wall.shape)) {
           return false;
         }
       }
       for (_j = 0, _len1 = bodies.length; _j < _len1; _j++) {
         body = bodies[_j];
         if (body instanceof Player) {
-          if (collides(body.circle, this.circle)) {
+          if (collides(body.circle, this.shape)) {
             shot = true;
             return false;
           }

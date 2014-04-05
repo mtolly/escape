@@ -96,18 +96,18 @@ collides = (x, y) ->
       x.center.distance_to(y.center) <= x.radius + y.radius
 
 class Wall
-  constructor: (@rect) ->
+  constructor: (@shape) ->
 
   push: (shape, push_x, push_y) ->
-    while collides(@rect, shape)
+    while collides(@shape, shape)
       shape = shape.change_x(push_x).change_y(push_y)
     shape
 
   draw: () ->
-    @rect.draw('black')
+    @shape.draw('black')
 
 class SwitchWall extends Wall
-  constructor: (@rect, @color) ->
+  constructor: (@shape, @color) ->
 
   open: () ->
     for floor in floors
@@ -120,7 +120,7 @@ class SwitchWall extends Wall
 
   draw: () ->
     return if @open()
-    @rect.draw(@color)
+    @shape.draw(@color)
 
 class Player
   constructor: (@circle) ->
@@ -160,7 +160,7 @@ class Player
     if moving
       dx = @speed * Math.cos(@angle)
       dy = @speed * Math.sin(@angle)
-      @circle = new Circle(new Point(@circle.center.x + dx, @circle.center.y + dy), @circle.radius)
+      @circle = @circle.change_x(dx).change_y(dy)
       push_x = if move_left then 1 else if move_right then -1 else 0
       push_y = if move_up   then 1 else if move_down  then -1 else 0
       for wall in walls
@@ -214,21 +214,21 @@ class Turret
     []
 
 class Bullet
-  constructor: (@circle, @angle) ->
+  constructor: (@shape, @angle) ->
     @speed = 8
 
   draw: () ->
-    @circle.draw('magenta')
+    @shape.draw('magenta')
 
   update: () ->
     dx = @speed * Math.cos(@angle)
     dy = @speed * Math.sin(@angle)
-    @circle.center = @circle.center.change_x(dx).change_y(dy)
+    @shape = @shape.change_x(dx).change_y(dy)
     for wall in walls
-      return false if wall.rect.includes_point(@circle.center)
+      return false if collides(@shape, wall.shape)
     for body in bodies
       if body instanceof Player
-        if collides(body.circle, @circle)
+        if collides(body.circle, @shape)
           shot = true
           return false
     true
