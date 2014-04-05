@@ -16,6 +16,19 @@ class Point
   distance_to: (p) ->
     Math.pow(Math.pow(@x - p.x, 2) + Math.pow(@y - p.y, 2), 0.5)
 
+  change_x: (dx) -> new Point(@x + dx, @y     )
+  change_y: (dy) -> new Point(@x     , @y + dy)
+
+  compare_x: (p) ->
+    if @x < p.x      then -1
+    else if @x > p.x then 1
+    else                  0
+
+  compare_y: (p) ->
+    if @x < p.x      then -1
+    else if @x > p.x then 1
+    else                  0
+
 class Rect
   constructor: (@top_left, @width, @height) ->
 
@@ -27,17 +40,56 @@ class Rect
   includes_point: (p) ->
     (@left_x() <= p.x <= @right_x()) and (@top_y() <= p.y <= @bottom_y())
 
+  center: () ->
+    new Point(@left_x() + 0.5 * @width, @top_y() + 0.5 * @height)
+
+  bottom_left: () -> new Point(@left_x(), @bottom_y())
+  top_right: () -> new Point(@right_x(), @top_y())
+  bottom_right: () -> new Point(@right_x(), @bottom_y())
+
+  change_x: (dx) -> new Rect(@top_left.change_x(dx), @width, @height)
+  change_y: (dy) -> new Rect(@top_left.change_y(dy), @width, @height)
+
 class Circle
   constructor: (@center, @radius) ->
 
   includes_point: (p) ->
     @center.distance_to(p) <= @radius
 
+  change_x: (dx) -> new Circle(@center.change_x(dx), @radius)
+  change_y: (dy) -> new Circle(@center.change_y(dy), @radius)
+
+collides = (x, y) ->
+  if x instanceof Rect and y instanceof Rect
+    for corner in [y.top_left, y.bottom_left(), y.top_right(), y.bottom_right()]
+      return true if x.includes_point(corner)
+    for corner in [x.top_left, x.bottom_left(), x.top_right(), x.bottom_right()]
+      return true if y.includes_point(corner)
+    false
+
 class Wall
   constructor: (@rect) ->
 
-  push: (shape) ->
-    shape # TODO
+  push: (shape, move_x, move_y) ->
+    rect = () ->
+      if shape instanceof Rect
+        shape
+      else if shape instanceof Circle
+        r = shape.radius
+        new Rect(new Point(shape.center.x - r, shape.center.y - r), 2 * r, 2 * r)
+
+    this_center = @rect.center()
+    that_center = rect().center()
+    dx = that_center.compare_x(this_center)
+    dy = that_center.compare_y(this_center)
+
+    while collides(@rect, rect())
+      if move_x
+        shape = shape.change_x(dx)
+      if move_y
+        shape = shape.change_y(dy)
+
+    shape
 
   draw: () ->
     ctx.fillStyle = 'black'
@@ -84,7 +136,7 @@ class Player
       dy = @speed * Math.sin(@angle)
       @circle = new Circle(new Point(@circle.center.x + dx, @circle.center.y + dy), @circle.radius)
     for wall in walls
-      @circle = wall.push(@circle)
+      @circle = wall.push(@circle, move_left or move_right, move_up or move_down)
 
 $(document).ready () ->
 
@@ -115,7 +167,7 @@ $(document).ready () ->
       window.setTimeout callback, 1000 / 60
   )()
 
-  walls.push new Wall(new Rect(new Point(10, 10), 30, 100))
+  walls.push new Wall(new Rect(new Point(300, 100), 30, 100))
   bodies.push new Player(new Circle(new Point(100, 200), 25))
 
   (animloop = ->
