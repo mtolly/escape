@@ -227,7 +227,7 @@
     function Player(circle) {
       this.circle = circle;
       this.angle = 1.5 * Math.PI;
-      this.speed = 3;
+      this.speed = 6;
     }
 
     Player.prototype.draw = function() {
@@ -316,6 +316,7 @@
     function Turret(center) {
       this.center = center;
       this.timer = 0;
+      this.goal = 30;
     }
 
     Turret.prototype.draw = function() {
@@ -329,7 +330,7 @@
     };
 
     Turret.prototype.update = function() {
-      if (this.timer >= 60) {
+      if (this.timer >= this.goal) {
         this.timer = 0;
       } else {
         this.timer += 1;
@@ -339,7 +340,7 @@
 
     Turret.prototype.spawn = function() {
       var angle, body, dx, dy, player, target, _i, _len;
-      if (this.timer >= 60) {
+      if (this.timer >= this.goal) {
         player = null;
         for (_i = 0, _len = bodies.length; _i < _len; _i++) {
           body = bodies[_i];
@@ -369,7 +370,7 @@
     function Bullet(center, angle) {
       this.center = center;
       this.angle = angle;
-      this.speed = 6;
+      this.speed = 8;
     }
 
     Bullet.prototype.draw = function() {

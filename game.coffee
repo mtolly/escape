@@ -107,7 +107,7 @@ class SwitchWall extends Wall
 class Player
   constructor: (@circle) ->
     @angle = 1.5 * Math.PI # down
-    @speed = 3 # pixels per frame
+    @speed = 6 # pixels per frame
 
   draw: () ->
     ctx.beginPath()
@@ -177,6 +177,7 @@ class Switch
 class Turret
   constructor: (@center) ->
     @timer = 0
+    @goal = 30
 
   draw: () ->
     ctx.beginPath()
@@ -188,14 +189,14 @@ class Turret
     ctx.stroke()
 
   update: () ->
-    if @timer >= 60
+    if @timer >= @goal
       @timer = 0
     else
       @timer += 1
     true
 
   spawn: () ->
-    if @timer >= 60
+    if @timer >= @goal
       player = null
       for body in bodies
         if body instanceof Player
@@ -212,7 +213,7 @@ class Turret
 
 class Bullet
   constructor: (@center, @angle) ->
-    @speed = 6
+    @speed = 8
 
   draw: () ->
     ctx.beginPath()
