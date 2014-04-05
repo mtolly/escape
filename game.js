@@ -100,6 +100,22 @@
       return new Rect(this.top_left.change_y(dy), this.width, this.height);
     };
 
+    Rect.prototype.draw = function(fill, stroke, stroke_width) {
+      if (stroke == null) {
+        stroke = null;
+      }
+      if (stroke_width == null) {
+        stroke_width = 3;
+      }
+      ctx.fillStyle = fill;
+      ctx.fillRect(this.left_x(), this.top_y(), this.width, this.height);
+      if (stroke) {
+        ctx.lineWidth = stroke_width;
+        ctx.strokeStyle = stroke;
+        return ctx.strokeRect(this.left_x(), this.top_y(), this.width, this.height);
+      }
+    };
+
     return Rect;
 
   })();
@@ -121,6 +137,25 @@
 
     Circle.prototype.change_y = function(dy) {
       return new Circle(this.center.change_y(dy), this.radius);
+    };
+
+    Circle.prototype.draw = function(fill, stroke, stroke_width) {
+      if (stroke == null) {
+        stroke = null;
+      }
+      if (stroke_width == null) {
+        stroke_width = 3;
+      }
+      ctx.beginPath();
+      ctx.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI, false);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      if (stroke) {
+        ctx.lineWidth = stroke_width;
+        ctx.strokeStyle = stroke;
+        ctx.stroke();
+      }
+      return ctx.closePath();
     };
 
     return Circle;
@@ -172,8 +207,7 @@
     };
 
     Wall.prototype.draw = function() {
-      ctx.fillStyle = 'black';
-      return ctx.fillRect(this.rect.left_x(), this.rect.top_y(), this.rect.width, this.rect.height);
+      return this.rect.draw('black');
     };
 
     return Wall;
@@ -214,8 +248,7 @@
       if (this.open()) {
         return;
       }
-      ctx.fillStyle = this.color;
-      return ctx.fillRect(this.rect.left_x(), this.rect.top_y(), this.rect.width, this.rect.height);
+      return this.rect.draw(this.color);
     };
 
     return SwitchWall;
@@ -231,10 +264,7 @@
     }
 
     Player.prototype.draw = function() {
-      ctx.beginPath();
-      ctx.arc(this.circle.center.x, this.circle.center.y, this.circle.radius, 0, 2 * Math.PI, false);
-      ctx.fillStyle = 'red';
-      return ctx.fill();
+      return this.circle.draw('red');
     };
 
     Player.prototype.update = function() {
@@ -281,13 +311,7 @@
     }
 
     Switch.prototype.draw = function() {
-      ctx.beginPath();
-      ctx.arc(this.circle.center.x, this.circle.center.y, this.circle.radius, 0, 2 * Math.PI, false);
-      ctx.fillStyle = this.color;
-      ctx.fill();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = 'black';
-      ctx.stroke();
+      this.circle.draw(this.color, 'black', 2);
       if (this.pressed) {
         ctx.fillStyle = 'white';
         return ctx.fillRect(this.circle.center.x - 2, this.circle.center.y - 2, 4, 4);
@@ -313,20 +337,14 @@
 
   Turret = (function() {
 
-    function Turret(center) {
-      this.center = center;
+    function Turret(circle) {
+      this.circle = circle;
       this.timer = 0;
       this.goal = 30;
     }
 
     Turret.prototype.draw = function() {
-      ctx.beginPath();
-      ctx.arc(this.center.x, this.center.y, 7, 0, 2 * Math.PI, false);
-      ctx.fillStyle = 'gray';
-      ctx.fill();
-      ctx.lineWidth = this.timer / 3;
-      ctx.strokeStyle = 'black';
-      return ctx.stroke();
+      return this.circle.draw('gray', 'black', this.timer / 3);
     };
 
     Turret.prototype.update = function() {
@@ -351,11 +369,11 @@
         }
         if (player) {
           target = player.circle.center;
-          dx = target.x - this.center.x;
-          dy = target.y - this.center.y;
+          dx = target.x - this.circle.center.x;
+          dy = target.y - this.circle.center.y;
           angle = Math.atan2(dy, dx);
           console.log(bodies.length);
-          return [new Bullet(this.center, angle)];
+          return [new Bullet(new Circle(this.circle.center, 5), angle)];
         }
       }
       return [];
@@ -367,34 +385,31 @@
 
   Bullet = (function() {
 
-    function Bullet(center, angle) {
-      this.center = center;
+    function Bullet(circle, angle) {
+      this.circle = circle;
       this.angle = angle;
       this.speed = 8;
     }
 
     Bullet.prototype.draw = function() {
-      ctx.beginPath();
-      ctx.arc(this.center.x, this.center.y, 5, 0, 2 * Math.PI, false);
-      ctx.fillStyle = 'magenta';
-      return ctx.fill();
+      return this.circle.draw('magenta');
     };
 
     Bullet.prototype.update = function() {
       var body, dx, dy, wall, _i, _j, _len, _len1;
       dx = this.speed * Math.cos(this.angle);
       dy = this.speed * Math.sin(this.angle);
-      this.center = this.center.change_x(dx).change_y(dy);
+      this.circle.center = this.circle.center.change_x(dx).change_y(dy);
       for (_i = 0, _len = walls.length; _i < _len; _i++) {
         wall = walls[_i];
-        if (wall.rect.includes_point(this.center)) {
+        if (wall.rect.includes_point(this.circle.center)) {
           return false;
         }
       }
       for (_j = 0, _len1 = bodies.length; _j < _len1; _j++) {
         body = bodies[_j];
         if (body instanceof Player) {
-          if (body.circle.includes_point(this.center)) {
+          if (body.circle.includes_point(this.circle.center)) {
             shot = true;
             return false;
           }
@@ -448,7 +463,7 @@
     bodies.push(new Player(new Circle(new Point(100, 200), 15)));
     floors.push(new Switch(new Circle(new Point(300, 300), 10), 'blue'));
     walls.push(new SwitchWall(new Rect(new Point(200, 20), 20, 80), 'blue'));
-    bodies.push(new Turret(new Point(400, 400)));
+    bodies.push(new Turret(new Circle(new Point(400, 400), 7)));
     return (animloop = function() {
       var body, floor, new_bodies, new_floors, wall, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _results;
       requestAnimFrame(animloop);

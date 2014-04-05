@@ -42,6 +42,14 @@ class Rect
   change_x: (dx) -> new Rect(@top_left.change_x(dx), @width, @height)
   change_y: (dy) -> new Rect(@top_left.change_y(dy), @width, @height)
 
+  draw: (fill, stroke = null, stroke_width = 3) ->
+    ctx.fillStyle = fill
+    ctx.fillRect(@left_x(), @top_y(), @width, @height)
+    if stroke
+      ctx.lineWidth = stroke_width
+      ctx.strokeStyle = stroke
+      ctx.strokeRect(@left_x(), @top_y(), @width, @height)
+
 class Circle
   constructor: (@center, @radius) ->
 
@@ -50,6 +58,17 @@ class Circle
 
   change_x: (dx) -> new Circle(@center.change_x(dx), @radius)
   change_y: (dy) -> new Circle(@center.change_y(dy), @radius)
+
+  draw: (fill, stroke = null, stroke_width = 3) ->
+    ctx.beginPath()
+    ctx.arc(@center.x, @center.y, @radius, 0, 2 * Math.PI, false)
+    ctx.fillStyle = fill
+    ctx.fill()
+    if stroke
+      ctx.lineWidth = stroke_width
+      ctx.strokeStyle = stroke
+      ctx.stroke()
+    ctx.closePath()
 
 collides = (x, y) ->
   if x instanceof Rect
@@ -84,8 +103,7 @@ class Wall
     shape
 
   draw: () ->
-    ctx.fillStyle = 'black'
-    ctx.fillRect(@rect.left_x(), @rect.top_y(), @rect.width, @rect.height)
+    @rect.draw('black')
 
 class SwitchWall extends Wall
   constructor: (@rect, @color) ->
@@ -101,8 +119,7 @@ class SwitchWall extends Wall
 
   draw: () ->
     return if @open()
-    ctx.fillStyle = @color
-    ctx.fillRect(@rect.left_x(), @rect.top_y(), @rect.width, @rect.height)
+    @rect.draw(@color)
 
 class Player
   constructor: (@circle) ->
@@ -110,10 +127,7 @@ class Player
     @speed = 6 # pixels per frame
 
   draw: () ->
-    ctx.beginPath()
-    ctx.arc(@circle.center.x, @circle.center.y, @circle.radius, 0, 2 * Math.PI, false)
-    ctx.fillStyle = 'red'
-    ctx.fill()
+    @circle.draw('red')
 
   update: () ->
     return false if shot
@@ -157,13 +171,7 @@ class Switch
   constructor: (@circle, @color, @pressed = false) ->
 
   draw: () ->
-    ctx.beginPath()
-    ctx.arc(@circle.center.x, @circle.center.y, @circle.radius, 0, 2 * Math.PI, false)
-    ctx.fillStyle = @color
-    ctx.fill()
-    ctx.lineWidth = 2
-    ctx.strokeStyle = 'black'
-    ctx.stroke()
+    @circle.draw(@color, 'black', 2)
     if @pressed
       ctx.fillStyle = 'white'
       ctx.fillRect(@circle.center.x - 2, @circle.center.y - 2, 4, 4)
@@ -175,18 +183,12 @@ class Switch
     true
 
 class Turret
-  constructor: (@center) ->
+  constructor: (@circle) ->
     @timer = 0
     @goal = 30
 
   draw: () ->
-    ctx.beginPath()
-    ctx.arc(@center.x, @center.y, 7, 0, 2 * Math.PI, false)
-    ctx.fillStyle = 'gray'
-    ctx.fill()
-    ctx.lineWidth = @timer / 3
-    ctx.strokeStyle = 'black'
-    ctx.stroke()
+    @circle.draw('gray', 'black', @timer / 3)
 
   update: () ->
     if @timer >= @goal
@@ -204,32 +206,29 @@ class Turret
           break
       if player
         target = player.circle.center
-        dx = target.x - @center.x
-        dy = target.y - @center.y
+        dx = target.x - @circle.center.x
+        dy = target.y - @circle.center.y
         angle = Math.atan2(dy, dx)
         console.log(bodies.length)
-        return [new Bullet(@center, angle)]
+        return [new Bullet(new Circle(@circle.center, 5), angle)]
     []
 
 class Bullet
-  constructor: (@center, @angle) ->
+  constructor: (@circle, @angle) ->
     @speed = 8
 
   draw: () ->
-    ctx.beginPath()
-    ctx.arc(@center.x, @center.y, 5, 0, 2 * Math.PI, false)
-    ctx.fillStyle = 'magenta'
-    ctx.fill()
+    @circle.draw('magenta')
 
   update: () ->
     dx = @speed * Math.cos(@angle)
     dy = @speed * Math.sin(@angle)
-    @center = @center.change_x(dx).change_y(dy)
+    @circle.center = @circle.center.change_x(dx).change_y(dy)
     for wall in walls
-      return false if wall.rect.includes_point(@center)
+      return false if wall.rect.includes_point(@circle.center)
     for body in bodies
       if body instanceof Player
-        if body.circle.includes_point(@center)
+        if body.circle.includes_point(@circle.center)
           shot = true
           return false
     true
@@ -271,7 +270,7 @@ $(document).ready () ->
   bodies.push new Player(new Circle(new Point(100, 200), 15))
   floors.push new Switch(new Circle(new Point(300, 300), 10), 'blue')
   walls.push new SwitchWall(new Rect(new Point(200, 20), 20, 80), 'blue')
-  bodies.push new Turret(new Point(400, 400))
+  bodies.push new Turret(new Circle(new Point(400, 400), 7))
 
   (animloop = ->
     requestAnimFrame animloop
