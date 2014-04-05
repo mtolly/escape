@@ -19,16 +19,6 @@ class Point
   change_x: (dx) -> new Point(@x + dx, @y     )
   change_y: (dy) -> new Point(@x     , @y + dy)
 
-  compare_x: (p) ->
-    if @x < p.x      then -1
-    else if @x > p.x then 1
-    else                  0
-
-  compare_y: (p) ->
-    if @y < p.y      then -1
-    else if @y > p.y then 1
-    else                  0
-
 class Rect
   constructor: (@top_left, @width, @height) ->
 
@@ -95,6 +85,23 @@ class Wall
     ctx.fillStyle = 'black'
     ctx.fillRect(@rect.left_x(), @rect.top_y(), @rect.width, @rect.height)
 
+class SwitchWall extends Wall
+  constructor: (@rect, @color) ->
+
+  open: () ->
+    for floor in floors
+      if floor instanceof Switch
+        return true if floor.color is @color and floor.pressed
+    false
+
+  push: (shape, push_x, push_y) ->
+    if @open() then shape else super
+
+  draw: () ->
+    return if @open()
+    ctx.fillStyle = @color
+    ctx.fillRect(@rect.left_x(), @rect.top_y(), @rect.width, @rect.height)
+
 class Player
   constructor: (@circle) ->
     @angle = 1.5 * Math.PI # down
@@ -140,6 +147,26 @@ class Player
       for wall in walls
         @circle = wall.push(@circle, push_x, push_y)
 
+class Switch
+  constructor: (@circle, @color, @pressed = false) ->
+
+  draw: () ->
+    ctx.beginPath()
+    ctx.arc(@circle.center.x, @circle.center.y, @circle.radius, 0, 2 * Math.PI, false)
+    ctx.fillStyle = @color
+    ctx.fill()
+    ctx.lineWidth = 2
+    ctx.strokeStyle = 'black'
+    ctx.stroke()
+    if @pressed
+      ctx.fillStyle = 'white'
+      ctx.fillRect(@circle.center.x - 2, @circle.center.y - 2, 4, 4)
+
+  update: () ->
+    for body in bodies
+      if body instanceof Player
+        @pressed = true if collides(@circle, body.circle)
+
 $(document).ready () ->
 
   canvas = $('#canvas')[0]
@@ -175,6 +202,8 @@ $(document).ready () ->
   walls.push new Wall(new Rect(new Point(0, 460), 640, 20))
   walls.push new Wall(new Rect(new Point(100, 100), 540, 20))
   bodies.push new Player(new Circle(new Point(100, 200), 15))
+  floors.push new Switch(new Circle(new Point(300, 300), 10), 'blue')
+  walls.push new SwitchWall(new Rect(new Point(200, 20), 20, 80), 'blue')
 
   (animloop = ->
     requestAnimFrame animloop
@@ -189,8 +218,8 @@ $(document).ready () ->
 
     for floor in floors
       floor.draw()
-    for wall in walls
-      wall.draw()
     for body in bodies
       body.draw()
+    for wall in walls
+      wall.draw()
   )()
