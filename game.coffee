@@ -11,6 +11,7 @@ key_left = false
 key_right = false
 
 shot = false
+won = false
 
 class Point
   constructor: (@x, @y) ->
@@ -209,7 +210,6 @@ class Turret
         dx = target.x - @circle.center.x
         dy = target.y - @circle.center.y
         angle = Math.atan2(dy, dx)
-        console.log(bodies.length)
         return [new Bullet(new Circle(@circle.center, 5), angle)]
     []
 
@@ -228,9 +228,22 @@ class Bullet
       return false if wall.rect.includes_point(@circle.center)
     for body in bodies
       if body instanceof Player
-        if body.circle.includes_point(@circle.center)
+        if collides(body.circle, @circle)
           shot = true
           return false
+    true
+
+class Goal
+  constructor: (@circle) ->
+
+  draw: () ->
+    @circle.draw('orange')
+
+  update: () ->
+    for body in bodies
+      if body instanceof Player
+        if collides(body.circle, @circle)
+          won = true
     true
 
 $(document).ready () ->
@@ -271,6 +284,7 @@ $(document).ready () ->
   floors.push new Switch(new Circle(new Point(300, 300), 10), 'blue')
   walls.push new SwitchWall(new Rect(new Point(200, 20), 20, 80), 'blue')
   bodies.push new Turret(new Circle(new Point(400, 400), 7))
+  floors.push new Goal(new Circle(new Point(400, 60), 15))
 
   (animloop = ->
     requestAnimFrame animloop
@@ -285,7 +299,7 @@ $(document).ready () ->
       new_floors.push(floor) if floor.update()
     floors = new_floors
 
-    ctx.fillStyle = 'white'
+    ctx.fillStyle = if shot then 'maroon' else if won then 'green' else 'white'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     for floor in floors
