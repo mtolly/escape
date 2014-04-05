@@ -50,9 +50,9 @@
     };
 
     Point.prototype.compare_y = function(p) {
-      if (this.x < p.x) {
+      if (this.y < p.y) {
         return -1;
-      } else if (this.x > p.x) {
+      } else if (this.y > p.y) {
         return 1;
       } else {
         return 0;
@@ -238,13 +238,13 @@
         dx = this.speed * Math.cos(this.angle);
         dy = this.speed * Math.sin(this.angle);
         this.circle = new Circle(new Point(this.circle.center.x + dx, this.circle.center.y + dy), this.circle.radius);
+        _results = [];
+        for (_i = 0, _len = walls.length; _i < _len; _i++) {
+          wall = walls[_i];
+          _results.push(this.circle = wall.push(this.circle, move_left || move_right, move_up || move_down));
+        }
+        return _results;
       }
-      _results = [];
-      for (_i = 0, _len = walls.length; _i < _len; _i++) {
-        wall = walls[_i];
-        _results.push(this.circle = wall.push(this.circle, move_left || move_right, move_up || move_down));
-      }
-      return _results;
     };
 
     return Player;

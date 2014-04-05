@@ -25,8 +25,8 @@ class Point
     else                  0
 
   compare_y: (p) ->
-    if @x < p.x      then -1
-    else if @x > p.x then 1
+    if @y < p.y      then -1
+    else if @y > p.y then 1
     else                  0
 
 class Rect
@@ -135,8 +135,8 @@ class Player
       dx = @speed * Math.cos(@angle)
       dy = @speed * Math.sin(@angle)
       @circle = new Circle(new Point(@circle.center.x + dx, @circle.center.y + dy), @circle.radius)
-    for wall in walls
-      @circle = wall.push(@circle, move_left or move_right, move_up or move_down)
+      for wall in walls
+        @circle = wall.push(@circle, move_left or move_right, move_up or move_down)
 
 $(document).ready () ->
 
