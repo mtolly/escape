@@ -10,6 +10,8 @@ key_up = false
 key_left = false
 key_right = false
 
+shot = false
+
 class Point
   constructor: (@x, @y) ->
 
@@ -114,6 +116,8 @@ class Player
     ctx.fill()
 
   update: () ->
+    return false if shot
+
     move_down  = key_down
     move_up    = key_up
     move_left  = key_left
@@ -170,6 +174,42 @@ class Switch
         @pressed = true if collides(@circle, body.circle)
     true
 
+class Turret
+  constructor: (@center) ->
+    @timer = 0
+
+  draw: () ->
+    ctx.beginPath()
+    ctx.arc(@center.x, @center.y, 7, 0, 2 * Math.PI, false)
+    ctx.fillStyle = 'gray'
+    ctx.fill()
+    ctx.lineWidth = @timer / 3
+    ctx.strokeStyle = 'black'
+    ctx.stroke()
+
+  update: () ->
+    if @timer >= 60
+      @timer = 0
+    else
+      @timer += 1
+    true
+
+  spawn: () ->
+    if @timer >= 60
+      player = null
+      for body in bodies
+        if body instanceof Player
+          player = body
+          break
+      if player
+        target = player.circle.center
+        dx = target.x - @center.x
+        dy = target.y - @center.y
+        angle = Math.atan2(dy, dx)
+        console.log(bodies.length)
+        return [new Bullet(@center, angle)]
+    []
+
 class Bullet
   constructor: (@center, @angle) ->
     @speed = 6
@@ -188,7 +228,9 @@ class Bullet
       return false if wall.rect.includes_point(@center)
     for body in bodies
       if body instanceof Player
-        return false if body.circle.includes_point(@center)
+        if body.circle.includes_point(@center)
+          shot = true
+          return false
     true
 
 $(document).ready () ->
@@ -220,15 +262,15 @@ $(document).ready () ->
       window.setTimeout callback, 1000 / 60
   )()
 
-  walls.push new Wall(new Rect(new Point(0, 0), 20, 480))
-  walls.push new Wall(new Rect(new Point(0, 0), 640, 20))
-  walls.push new Wall(new Rect(new Point(620, 0), 20, 480))
-  walls.push new Wall(new Rect(new Point(0, 460), 640, 20))
-  walls.push new Wall(new Rect(new Point(100, 100), 540, 20))
+  walls.push new Wall(new Rect(new Point(0, 0), 20, canvas.height))
+  walls.push new Wall(new Rect(new Point(0, 0), canvas.width, 20))
+  walls.push new Wall(new Rect(new Point(canvas.width - 20, 0), 20, canvas.height))
+  walls.push new Wall(new Rect(new Point(0, canvas.height - 20), canvas.width, 20))
+  walls.push new Wall(new Rect(new Point(100, 100), canvas.width - 100, 20))
   bodies.push new Player(new Circle(new Point(100, 200), 15))
   floors.push new Switch(new Circle(new Point(300, 300), 10), 'blue')
   walls.push new SwitchWall(new Rect(new Point(200, 20), 20, 80), 'blue')
-  bodies.push new Bullet(new Point(400, 400), 1.2 * Math.PI)
+  bodies.push new Turret(new Point(400, 400))
 
   (animloop = ->
     requestAnimFrame animloop
@@ -236,6 +278,7 @@ $(document).ready () ->
     new_bodies = []
     for body in bodies
       new_bodies.push(body) if body.update()
+      new_bodies = new_bodies.concat(body.spawn()) if body.spawn
     bodies = new_bodies
     new_floors = []
     for floor in floors
