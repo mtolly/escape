@@ -88,8 +88,7 @@ class Wall
 
   push: (shape, push_x, push_y) ->
     while collides(@rect, shape)
-        shape = shape.change_x(push_x).change_y(push_y)
-
+      shape = shape.change_x(push_x).change_y(push_y)
     shape
 
   draw: () ->
@@ -170,9 +169,12 @@ $(document).ready () ->
       window.setTimeout callback, 1000 / 60
   )()
 
-  walls.push new Wall(new Rect(new Point(0, 0), 30, 480))
-  walls.push new Wall(new Rect(new Point(0, 0), 640, 30))
-  bodies.push new Player(new Circle(new Point(100, 200), 25))
+  walls.push new Wall(new Rect(new Point(0, 0), 20, 480))
+  walls.push new Wall(new Rect(new Point(0, 0), 640, 20))
+  walls.push new Wall(new Rect(new Point(620, 0), 20, 480))
+  walls.push new Wall(new Rect(new Point(0, 460), 640, 20))
+  walls.push new Wall(new Rect(new Point(100, 100), 540, 20))
+  bodies.push new Player(new Circle(new Point(100, 200), 15))
 
   (animloop = ->
     requestAnimFrame animloop

@@ -277,9 +277,12 @@
         return window.setTimeout(callback, 1000 / 60);
       };
     })();
-    walls.push(new Wall(new Rect(new Point(0, 0), 30, 480)));
-    walls.push(new Wall(new Rect(new Point(0, 0), 640, 30)));
-    bodies.push(new Player(new Circle(new Point(100, 200), 25)));
+    walls.push(new Wall(new Rect(new Point(0, 0), 20, 480)));
+    walls.push(new Wall(new Rect(new Point(0, 0), 640, 20)));
+    walls.push(new Wall(new Rect(new Point(620, 0), 20, 480)));
+    walls.push(new Wall(new Rect(new Point(0, 460), 640, 20)));
+    walls.push(new Wall(new Rect(new Point(100, 100), 540, 20)));
+    bodies.push(new Player(new Circle(new Point(100, 200), 15)));
     return (animloop = function() {
       var body, floor, wall, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _results;
       requestAnimFrame(animloop);
