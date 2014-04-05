@@ -180,19 +180,9 @@
       this.rect = rect;
     }
 
-    Wall.prototype.push = function(shape, move_x, move_y) {
-      var dx, dy, that_center, this_center;
-      this_center = this.rect.center();
-      that_center = shape.center;
-      dx = that_center.compare_x(this_center);
-      dy = that_center.compare_y(this_center);
+    Wall.prototype.push = function(shape, push_x, push_y) {
       while (collides(this.rect, shape)) {
-        if (move_x) {
-          shape = shape.change_x(dx);
-        }
-        if (move_y) {
-          shape = shape.change_y(dy);
-        }
+        shape = shape.change_x(push_x).change_y(push_y);
       }
       return shape;
     };
@@ -222,7 +212,7 @@
     };
 
     Player.prototype.update = function() {
-      var dx, dy, move_down, move_left, move_right, move_up, moving, wall, _i, _len, _results;
+      var dx, dy, move_down, move_left, move_right, move_up, moving, push_x, push_y, wall, _i, _len, _results;
       move_down = key_down;
       move_up = key_up;
       move_left = key_left;
@@ -239,10 +229,12 @@
         dx = this.speed * Math.cos(this.angle);
         dy = this.speed * Math.sin(this.angle);
         this.circle = new Circle(new Point(this.circle.center.x + dx, this.circle.center.y + dy), this.circle.radius);
+        push_x = move_left ? 1 : move_right ? -1 : 0;
+        push_y = move_up ? 1 : move_down ? -1 : 0;
         _results = [];
         for (_i = 0, _len = walls.length; _i < _len; _i++) {
           wall = walls[_i];
-          _results.push(this.circle = wall.push(this.circle, move_left || move_right, move_up || move_down));
+          _results.push(this.circle = wall.push(this.circle, push_x, push_y));
         }
         return _results;
       }
@@ -285,7 +277,8 @@
         return window.setTimeout(callback, 1000 / 60);
       };
     })();
-    walls.push(new Wall(new Rect(new Point(300, 100), 30, 100)));
+    walls.push(new Wall(new Rect(new Point(0, 0), 30, 480)));
+    walls.push(new Wall(new Rect(new Point(0, 0), 640, 30)));
     bodies.push(new Player(new Circle(new Point(100, 200), 25)));
     return (animloop = function() {
       var body, floor, wall, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _results;

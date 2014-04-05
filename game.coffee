@@ -86,17 +86,9 @@ collides = (x, y) ->
 class Wall
   constructor: (@rect) ->
 
-  push: (shape, move_x, move_y) ->
-    this_center = @rect.center()
-    that_center = shape.center
-    dx = that_center.compare_x(this_center)
-    dy = that_center.compare_y(this_center)
-
+  push: (shape, push_x, push_y) ->
     while collides(@rect, shape)
-      if move_x
-        shape = shape.change_x(dx)
-      if move_y
-        shape = shape.change_y(dy)
+        shape = shape.change_x(push_x).change_y(push_y)
 
     shape
 
@@ -144,8 +136,10 @@ class Player
       dx = @speed * Math.cos(@angle)
       dy = @speed * Math.sin(@angle)
       @circle = new Circle(new Point(@circle.center.x + dx, @circle.center.y + dy), @circle.radius)
+      push_x = if move_left then 1 else if move_right then -1 else 0
+      push_y = if move_up   then 1 else if move_down  then -1 else 0
       for wall in walls
-        @circle = wall.push(@circle, move_left or move_right, move_up or move_down)
+        @circle = wall.push(@circle, push_x, push_y)
 
 $(document).ready () ->
 
@@ -176,7 +170,8 @@ $(document).ready () ->
       window.setTimeout callback, 1000 / 60
   )()
 
-  walls.push new Wall(new Rect(new Point(300, 100), 30, 100))
+  walls.push new Wall(new Rect(new Point(0, 0), 30, 480))
+  walls.push new Wall(new Rect(new Point(0, 0), 640, 30))
   bodies.push new Player(new Circle(new Point(100, 200), 25))
 
   (animloop = ->
