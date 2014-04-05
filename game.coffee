@@ -275,16 +275,42 @@ $(document).ready () ->
       window.setTimeout callback, 1000 / 60
   )()
 
+  canvas.width = 820
+  canvas.height = 520
+
   walls.push new Wall(new Rect(new Point(0, 0), 20, canvas.height))
   walls.push new Wall(new Rect(new Point(0, 0), canvas.width, 20))
   walls.push new Wall(new Rect(new Point(canvas.width - 20, 0), 20, canvas.height))
   walls.push new Wall(new Rect(new Point(0, canvas.height - 20), canvas.width, 20))
-  walls.push new Wall(new Rect(new Point(100, 100), canvas.width - 100, 20))
-  bodies.push new Player(new Circle(new Point(100, 200), 15))
-  floors.push new Switch(new Circle(new Point(300, 300), 10), 'blue')
-  walls.push new SwitchWall(new Rect(new Point(200, 20), 20, 80), 'blue')
-  bodies.push new Turret(new Circle(new Point(400, 400), 7))
-  floors.push new Goal(new Circle(new Point(400, 60), 15))
+
+  walls.push new Wall(new Rect(new Point(100, 0), 20, 200))
+  walls.push new Wall(new Rect(new Point(100, 320), 20, 200))
+  bodies.push new Player(new Circle(new Point(60, 60), 15))
+  floors.push new Switch(new Circle(new Point(60, canvas.height - 60), 10), 'blue')
+
+  walls.push new SwitchWall(new Rect(new Point(200, 20), 20, 80), 'lime')
+  walls.push new Wall(new Rect(new Point(200, 100), 20, 100))
+
+  walls.push new Wall(new Rect(new Point(200, 320), 20, 100))
+  walls.push new SwitchWall(new Rect(new Point(200, 420), 20, 80), 'red')
+
+  walls.push new Wall(new Rect(new Point(200, 100), 400, 20))
+  walls.push new Wall(new Rect(new Point(200, 400), 400, 20))
+
+  walls.push new Wall(new Rect(new Point(580, 100), 20, 320))
+
+
+  walls.push new SwitchWall(new Rect(new Point(200, 200), 100, 20), 'blue')
+  walls.push new SwitchWall(new Rect(new Point(200, 300), 100, 20), 'yellow')
+
+  walls.push new Wall(new Rect(new Point(300, 200), 300, 20))
+  walls.push new Wall(new Rect(new Point(300, 300), 400, 20))
+
+
+  walls.push new Wall(new Rect(new Point(680, 420), 20, 80))
+
+  #bodies.push new Turret(new Circle(new Point(400, 400), 7))
+  #floors.push new Goal(new Circle(new Point(400, 60), 15))
 
   (animloop = ->
     requestAnimFrame animloop
