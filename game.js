@@ -145,22 +145,32 @@
 
   collides = function(x, y) {
     var corner, _i, _j, _len, _len1, _ref, _ref1;
-    if (x instanceof Rect && y instanceof Rect) {
-      _ref = [y.top_left, y.bottom_left(), y.top_right(), y.bottom_right()];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        corner = _ref[_i];
-        if (x.includes_point(corner)) {
-          return true;
+    if (x instanceof Rect) {
+      if (y instanceof Rect) {
+        _ref = [y.top_left, y.bottom_left(), y.top_right(), y.bottom_right()];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          corner = _ref[_i];
+          if (x.includes_point(corner)) {
+            return true;
+          }
         }
-      }
-      _ref1 = [x.top_left, x.bottom_left(), x.top_right(), x.bottom_right()];
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        corner = _ref1[_j];
-        if (y.includes_point(corner)) {
-          return true;
+        _ref1 = [x.top_left, x.bottom_left(), x.top_right(), x.bottom_right()];
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          corner = _ref1[_j];
+          if (y.includes_point(corner)) {
+            return true;
+          }
         }
+        return false;
+      } else if (y instanceof Circle) {
+        return x.includes_point(y.center) || x.includes_point(y.center.change_x(y.radius)) || x.includes_point(y.center.change_x(-y.radius)) || x.includes_point(y.center.change_y(y.radius)) || x.includes_point(y.center.change_y(-y.radius)) || y.includes_point(x.top_left) || y.includes_point(x.bottom_left()) || y.includes_point(x.top_right()) || y.includes_point(x.bottom_right());
       }
-      return false;
+    } else if (x instanceof Circle) {
+      if (y instanceof Rect) {
+        return collides(y, x);
+      } else if (y instanceof Circle) {
+        return x.center.distance_to(y.center) <= x.radius + y.radius;
+      }
     }
   };
 
@@ -171,21 +181,12 @@
     }
 
     Wall.prototype.push = function(shape, move_x, move_y) {
-      var dx, dy, rect, that_center, this_center;
-      rect = function() {
-        var r;
-        if (shape instanceof Rect) {
-          return shape;
-        } else if (shape instanceof Circle) {
-          r = shape.radius;
-          return new Rect(new Point(shape.center.x - r, shape.center.y - r), 2 * r, 2 * r);
-        }
-      };
+      var dx, dy, that_center, this_center;
       this_center = this.rect.center();
-      that_center = rect().center();
+      that_center = shape.center;
       dx = that_center.compare_x(this_center);
       dy = that_center.compare_y(this_center);
-      while (collides(this.rect, rect())) {
+      while (collides(this.rect, shape)) {
         if (move_x) {
           shape = shape.change_x(dx);
         }

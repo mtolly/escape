@@ -60,30 +60,39 @@ class Circle
   change_y: (dy) -> new Circle(@center.change_y(dy), @radius)
 
 collides = (x, y) ->
-  if x instanceof Rect and y instanceof Rect
-    for corner in [y.top_left, y.bottom_left(), y.top_right(), y.bottom_right()]
-      return true if x.includes_point(corner)
-    for corner in [x.top_left, x.bottom_left(), x.top_right(), x.bottom_right()]
-      return true if y.includes_point(corner)
-    false
+  if x instanceof Rect
+    if y instanceof Rect
+      for corner in [y.top_left, y.bottom_left(), y.top_right(), y.bottom_right()]
+        return true if x.includes_point(corner)
+      for corner in [x.top_left, x.bottom_left(), x.top_right(), x.bottom_right()]
+        return true if y.includes_point(corner)
+      false
+    else if y instanceof Circle
+      x.includes_point(y.center) or
+        x.includes_point(y.center.change_x(y.radius)) or
+        x.includes_point(y.center.change_x(-(y.radius))) or
+        x.includes_point(y.center.change_y(y.radius)) or
+        x.includes_point(y.center.change_y(-(y.radius))) or
+        y.includes_point(x.top_left) or
+        y.includes_point(x.bottom_left()) or
+        y.includes_point(x.top_right()) or
+        y.includes_point(x.bottom_right())
+  else if x instanceof Circle
+    if y instanceof Rect
+      collides(y, x)
+    else if y instanceof Circle
+      x.center.distance_to(y.center) <= x.radius + y.radius
 
 class Wall
   constructor: (@rect) ->
 
   push: (shape, move_x, move_y) ->
-    rect = () ->
-      if shape instanceof Rect
-        shape
-      else if shape instanceof Circle
-        r = shape.radius
-        new Rect(new Point(shape.center.x - r, shape.center.y - r), 2 * r, 2 * r)
-
     this_center = @rect.center()
-    that_center = rect().center()
+    that_center = shape.center
     dx = that_center.compare_x(this_center)
     dy = that_center.compare_y(this_center)
 
-    while collides(@rect, rect())
+    while collides(@rect, shape)
       if move_x
         shape = shape.change_x(dx)
       if move_y
