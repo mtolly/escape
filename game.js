@@ -266,7 +266,7 @@
     }
 
     Player.prototype.draw = function() {
-      return this.circle.draw('red');
+      return this.circle.draw('gray');
     };
 
     Player.prototype.update = function() {
@@ -505,6 +505,12 @@
     walls.push(new Wall(new Rect(new Point(300, 200), 300, 20)));
     walls.push(new Wall(new Rect(new Point(300, 300), 400, 20)));
     walls.push(new Wall(new Rect(new Point(680, 420), 20, 80)));
+    bodies.push(new Turret(new Circle(new Point(400, 260), 7)));
+    floors.push(new Switch(new Circle(new Point(530, 160), 10), 'lime'));
+    floors.push(new Switch(new Circle(new Point(530, 360), 10), 'red'));
+    floors.push(new Goal(new Circle(new Point(640, 460), 15)));
+    floors.push(new Switch(new Circle(new Point(760, 60), 10), 'yellow'));
+    bodies.push(new Turret(new Circle(new Point(760, 310), 7)));
     return (animloop = function() {
       var body, floor, new_bodies, new_floors, wall, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _results;
       requestAnimFrame(animloop);

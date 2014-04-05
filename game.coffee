@@ -128,7 +128,7 @@ class Player
     @speed = 6 # pixels per frame
 
   draw: () ->
-    @circle.draw('red')
+    @circle.draw('gray')
 
   update: () ->
     return false if shot
@@ -309,7 +309,13 @@ $(document).ready () ->
 
   walls.push new Wall(new Rect(new Point(680, 420), 20, 80))
 
-  #bodies.push new Turret(new Circle(new Point(400, 400), 7))
+  bodies.push new Turret(new Circle(new Point(400, 260), 7))
+  floors.push new Switch(new Circle(new Point(530, 160), 10), 'lime')
+  floors.push new Switch(new Circle(new Point(530, 360), 10), 'red')
+  floors.push new Goal(new Circle(new Point(640, 460), 15))
+  floors.push new Switch(new Circle(new Point(760, 60), 10), 'yellow')
+  bodies.push new Turret(new Circle(new Point(760, 310), 7))
+
   #floors.push new Goal(new Circle(new Point(400, 60), 15))
 
   (animloop = ->
