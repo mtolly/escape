@@ -464,6 +464,14 @@
           return key_right = true;
         case 40:
           return key_down = true;
+        case 'A'.charCodeAt(0):
+          return key_left = true;
+        case 'W'.charCodeAt(0):
+          return key_up = true;
+        case 'D'.charCodeAt(0):
+          return key_right = true;
+        case 'S'.charCodeAt(0):
+          return key_down = true;
       }
     });
     $(document).keyup(function(evt) {
@@ -475,6 +483,14 @@
         case 39:
           return key_right = false;
         case 40:
+          return key_down = false;
+        case 'A'.charCodeAt(0):
+          return key_left = false;
+        case 'W'.charCodeAt(0):
+          return key_up = false;
+        case 'D'.charCodeAt(0):
+          return key_right = false;
+        case 'S'.charCodeAt(0):
           return key_down = false;
       }
     });

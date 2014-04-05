@@ -5,6 +5,10 @@ walls  = []
 floors = []
 bodies = []
 
+# floors and bodies have draw() and update() methods.
+# update() returns a bool, true if the object should survive this frame.
+# bodies can optionally have a spawn() method, which returns an array of new bodies.
+
 key_down = false
 key_up = false
 key_left = false
@@ -257,6 +261,10 @@ $(document).ready () ->
       when 38 then key_up    = true
       when 39 then key_right = true
       when 40 then key_down  = true
+      when 'A'.charCodeAt(0) then key_left  = true
+      when 'W'.charCodeAt(0) then key_up    = true
+      when 'D'.charCodeAt(0) then key_right = true
+      when 'S'.charCodeAt(0) then key_down  = true
 
   $(document).keyup (evt) ->
     switch evt.which
@@ -264,6 +272,10 @@ $(document).ready () ->
       when 38 then key_up    = false
       when 39 then key_right = false
       when 40 then key_down  = false
+      when 'A'.charCodeAt(0) then key_left  = false
+      when 'W'.charCodeAt(0) then key_up    = false
+      when 'D'.charCodeAt(0) then key_right = false
+      when 'S'.charCodeAt(0) then key_down  = false
 
   window.requestAnimFrame = (->
     window.requestAnimationFrame or
