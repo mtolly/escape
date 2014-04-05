@@ -147,6 +147,8 @@ class Player
       for wall in walls
         @circle = wall.push(@circle, push_x, push_y)
 
+    true
+
 class Switch
   constructor: (@circle, @color, @pressed = false) ->
 
@@ -166,6 +168,28 @@ class Switch
     for body in bodies
       if body instanceof Player
         @pressed = true if collides(@circle, body.circle)
+    true
+
+class Bullet
+  constructor: (@center, @angle) ->
+    @speed = 6
+
+  draw: () ->
+    ctx.beginPath()
+    ctx.arc(@center.x, @center.y, 5, 0, 2 * Math.PI, false)
+    ctx.fillStyle = 'magenta'
+    ctx.fill()
+
+  update: () ->
+    dx = @speed * Math.cos(@angle)
+    dy = @speed * Math.sin(@angle)
+    @center = @center.change_x(dx).change_y(dy)
+    for wall in walls
+      return false if wall.rect.includes_point(@center)
+    for body in bodies
+      if body instanceof Player
+        return false if body.circle.includes_point(@center)
+    true
 
 $(document).ready () ->
 
@@ -204,14 +228,19 @@ $(document).ready () ->
   bodies.push new Player(new Circle(new Point(100, 200), 15))
   floors.push new Switch(new Circle(new Point(300, 300), 10), 'blue')
   walls.push new SwitchWall(new Rect(new Point(200, 20), 20, 80), 'blue')
+  bodies.push new Bullet(new Point(400, 400), 1.2 * Math.PI)
 
   (animloop = ->
     requestAnimFrame animloop
 
+    new_bodies = []
     for body in bodies
-      body.update()
+      new_bodies.push(body) if body.update()
+    bodies = new_bodies
+    new_floors = []
     for floor in floors
-      floor.update()
+      new_floors.push(floor) if floor.update()
+    floors = new_floors
 
     ctx.fillStyle = 'white'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
