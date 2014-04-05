@@ -124,7 +124,13 @@
       move_left = key_left;
       move_right = key_right;
       moving = true;
-      this.angle = Math.PI * (move_down ? move_left ? 0.75 : move_right ? 0.25 : 0.5 : move_up ? move_left ? 1.25 : move_right ? 1.75 : 1.5 : move_left ? 1 : move_right ? 0 : moving = false);
+      if (move_down && move_up) {
+        move_down = move_up = false;
+      }
+      if (move_left && move_right) {
+        move_left = move_right = false;
+      }
+      this.angle = Math.PI * (move_down ? move_left ? 0.75 : move_right ? 0.25 : 0.5 : move_up ? move_left ? 1.25 : move_right ? 1.75 : 1.5 : move_left ? 1 : move_right ? 0 : (moving = false, this.angle));
       if (moving) {
         dx = this.speed * Math.cos(this.angle);
         dy = this.speed * Math.sin(this.angle);

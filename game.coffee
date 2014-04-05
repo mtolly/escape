@@ -61,6 +61,10 @@ class Player
     move_right = key_right
 
     moving = true
+    if move_down and move_up
+      move_down = move_up = false
+    if move_left and move_right
+      move_left = move_right = false
     @angle = Math.PI *
       if move_down
         if move_left then 0.75
@@ -73,7 +77,7 @@ class Player
       else
         if move_left then 1
         else if move_right then 0
-        else moving = false
+        else moving = false; @angle
 
     if moving
       dx = @speed * Math.cos(@angle)
