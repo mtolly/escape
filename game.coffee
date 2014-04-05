@@ -36,7 +36,7 @@ class Circle
 class Wall
   constructor: (@rect) ->
 
-  push: (shape, dir) ->
+  push: (shape) ->
     shape # TODO
 
   draw: () ->
@@ -46,7 +46,7 @@ class Wall
 class Player
   constructor: (@circle) ->
     @angle = 1.5 * Math.PI # down
-    @speed = 1 # pixels per frame
+    @speed = 3 # pixels per frame
 
   draw: () ->
     ctx.beginPath()
@@ -55,16 +55,51 @@ class Player
     ctx.fill()
 
   update: () ->
-    move_down  = true
-    move_up    = false
-    move_left  = false
-    move_right = false
-    # TODO
+    move_down  = key_down
+    move_up    = key_up
+    move_left  = key_left
+    move_right = key_right
+
+    moving = true
+    @angle = Math.PI *
+      if move_down
+        if move_left then 0.75
+        else if move_right then 0.25
+        else 0.5
+      else if move_up
+        if move_left then 1.25
+        else if move_right then 1.75
+        else 1.5
+      else
+        if move_left then 1
+        else if move_right then 0
+        else moving = false
+
+    if moving
+      dx = @speed * Math.cos(@angle)
+      dy = @speed * Math.sin(@angle)
+      @circle = new Circle(new Point(@circle.center.x + dx, @circle.center.y + dy), @circle.radius)
+    for wall in walls
+      @circle = wall.push(@circle)
 
 $(document).ready () ->
 
   canvas = $('#canvas')[0]
   ctx = canvas.getContext '2d'
+
+  $(document).keydown (evt) ->
+    switch evt.which
+      when 37 then key_left  = true
+      when 38 then key_up    = true
+      when 39 then key_right = true
+      when 40 then key_down  = true
+
+  $(document).keyup (evt) ->
+    switch evt.which
+      when 37 then key_left  = false
+      when 38 then key_up    = false
+      when 39 then key_right = false
+      when 40 then key_down  = false
 
   window.requestAnimFrame = (->
     window.requestAnimationFrame or

@@ -89,7 +89,7 @@
       this.rect = rect;
     }
 
-    Wall.prototype.push = function(shape, dir) {
+    Wall.prototype.push = function(shape) {
       return shape;
     };
 
@@ -107,7 +107,7 @@
     function Player(circle) {
       this.circle = circle;
       this.angle = 1.5 * Math.PI;
-      this.speed = 1;
+      this.speed = 3;
     }
 
     Player.prototype.draw = function() {
@@ -118,11 +118,24 @@
     };
 
     Player.prototype.update = function() {
-      var move_down, move_left, move_right, move_up;
-      move_down = true;
-      move_up = false;
-      move_left = false;
-      return move_right = false;
+      var dx, dy, move_down, move_left, move_right, move_up, moving, wall, _i, _len, _results;
+      move_down = key_down;
+      move_up = key_up;
+      move_left = key_left;
+      move_right = key_right;
+      moving = true;
+      this.angle = Math.PI * (move_down ? move_left ? 0.75 : move_right ? 0.25 : 0.5 : move_up ? move_left ? 1.25 : move_right ? 1.75 : 1.5 : move_left ? 1 : move_right ? 0 : moving = false);
+      if (moving) {
+        dx = this.speed * Math.cos(this.angle);
+        dy = this.speed * Math.sin(this.angle);
+        this.circle = new Circle(new Point(this.circle.center.x + dx, this.circle.center.y + dy), this.circle.radius);
+      }
+      _results = [];
+      for (_i = 0, _len = walls.length; _i < _len; _i++) {
+        wall = walls[_i];
+        _results.push(this.circle = wall.push(this.circle));
+      }
+      return _results;
     };
 
     return Player;
@@ -133,6 +146,30 @@
     var animloop;
     canvas = $('#canvas')[0];
     ctx = canvas.getContext('2d');
+    $(document).keydown(function(evt) {
+      switch (evt.which) {
+        case 37:
+          return key_left = true;
+        case 38:
+          return key_up = true;
+        case 39:
+          return key_right = true;
+        case 40:
+          return key_down = true;
+      }
+    });
+    $(document).keyup(function(evt) {
+      switch (evt.which) {
+        case 37:
+          return key_left = false;
+        case 38:
+          return key_up = false;
+        case 39:
+          return key_right = false;
+        case 40:
+          return key_down = false;
+      }
+    });
     window.requestAnimFrame = (function() {
       return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback) {
         return window.setTimeout(callback, 1000 / 60);
