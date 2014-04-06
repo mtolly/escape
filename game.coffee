@@ -14,6 +14,10 @@ key_up = false
 key_left = false
 key_right = false
 
+mouse_down = false
+mouse_x = 0
+mouse_y = 0
+
 shot = false
 won = false
 
@@ -142,12 +146,24 @@ class Player
     move_left  = key_left
     move_right = key_right
 
+    if mouse_down
+      mouse_angle = Math.atan2(mouse_y - @circle.center.y, mouse_x - @circle.center.x)
+      # between -pi and pi
+      if mouse_angle < 0
+        move_up or= true
+      else if mouse_angle > 0
+        move_down or= true
+      if mouse_angle > 0.5 * Math.PI or mouse_angle < -0.5 * Math.PI
+        move_left or= true
+      else if -0.5 * Math.PI < mouse_angle < 0.5 * Math.PI
+        move_right or= true
+
     moving = true
     if move_down and move_up
       move_down = move_up = false
     if move_left and move_right
       move_left = move_right = false
-    @angle = Math.PI *
+    @angle = if mouse_down then mouse_angle else Math.PI *
       if move_down
         if move_left then 0.75
         else if move_right then 0.25
@@ -265,6 +281,7 @@ $(document).ready () ->
       when 'W'.charCodeAt(0) then key_up    = true
       when 'D'.charCodeAt(0) then key_right = true
       when 'S'.charCodeAt(0) then key_down  = true
+    null
 
   $(document).keyup (evt) ->
     switch evt.which
@@ -276,6 +293,21 @@ $(document).ready () ->
       when 'W'.charCodeAt(0) then key_up    = false
       when 'D'.charCodeAt(0) then key_right = false
       when 'S'.charCodeAt(0) then key_down  = false
+    null
+
+  $(document).mousemove (evt) ->
+    rect = canvas.getBoundingClientRect()
+    mouse_x = evt.clientX - rect.left
+    mouse_y = evt.clientY - rect.top
+    null
+
+  $(document).mousedown (evt) ->
+    mouse_down = true
+    null
+
+  $(document).mouseup (evt) ->
+    mouse_down = false
+    null
 
   window.requestAnimFrame = (->
     window.requestAnimationFrame or
@@ -352,4 +384,8 @@ $(document).ready () ->
       body.draw()
     for wall in walls
       wall.draw()
+
+    null
   )()
+
+  null
