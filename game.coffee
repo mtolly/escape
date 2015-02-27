@@ -20,6 +20,7 @@ mouse_y = 0
 
 shot = false
 won = false
+endedAt = null
 
 class Point
   constructor: (@x, @y) ->
@@ -250,6 +251,7 @@ class Bullet
       if body instanceof Player
         if collides(body.circle, @shape)
           shot = true
+          endedAt ?= Date.now()
           return false
     true
 
@@ -264,6 +266,7 @@ class Goal
       if body instanceof Player
         if collides(body.circle, @circle)
           won = true
+          endedAt ?= Date.now()
     true
 
 $(document).ready () ->
@@ -362,6 +365,7 @@ $(document).ready () ->
 
   #floors.push new Goal(new Circle(new Point(400, 60), 15))
 
+  startTime = Date.now()
   (animloop = ->
     requestAnimFrame animloop
 
@@ -384,6 +388,19 @@ $(document).ready () ->
       body.draw()
     for wall in walls
       wall.draw()
+
+    clockSeconds = ((endedAt ? Date.now()) - startTime) / 1000
+    minutes = Math.floor(clockSeconds / 60)
+    seconds = clockSeconds - minutes * 60
+    timeDisplay = ''
+    timeDisplay += '0' if minutes < 10
+    timeDisplay += minutes
+    timeDisplay += ':'
+    timeDisplay += '0' if seconds < 10
+    timeDisplay += seconds.toFixed(3)
+    ctx.fillStyle = 'white'
+    ctx.font = '15px monospace'
+    ctx.fillText timeDisplay, 3, 15
 
     null
   )()
